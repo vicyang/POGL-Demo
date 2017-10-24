@@ -43,6 +43,9 @@ MAIN:
 }
 
 SUB1:
+{
+    ;
+}
 
 
 sub init
