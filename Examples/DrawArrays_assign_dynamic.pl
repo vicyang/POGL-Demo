@@ -12,6 +12,14 @@ BEGIN
     our $HEIGHT = 500;
     our $WIDTH  = 700;
     our ($rx, $ry, $rz) = (0.0, 0.0, 0.0);
+
+    # 每个三角形3个顶点，每个顶点3个分量
+    our $tri_n = 5;
+    our $vtx_n = $tri_n * 3;
+    our $ele_n = $vtx_n * 3;
+
+    our $verts  = OpenGL::Array->new($ele_n, GL_FLOAT );
+    our $colors = OpenGL::Array->new($ele_n, GL_FLOAT );
 }
 
 &main();
@@ -24,28 +32,24 @@ sub display
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
 
-    my $verts  = OpenGL::Array->new( 9, GL_FLOAT );
-    my $colors = OpenGL::Array->new( 9, GL_FLOAT );
-
-    $verts->assign(0,  (0.5,0.5,0.0, 0.8,0.8,0.0, 1.0,1.0,0.0) );
-    $colors->assign(0, (0.5,0.5,0.0, 0.8,0.8,0.0, 1.0,1.0,0.0) );
+    $verts->assign(0,  map { rand(1.0) } (1..$ele_n) );
+    $colors->assign(0, map { rand(1.0) } (1..$ele_n) );
 
     # 分量，类型，间隔，指针
     glVertexPointer_c(3, GL_FLOAT, 0, $verts->ptr);
     glColorPointer_c( 3, GL_FLOAT, 0, $colors->ptr);
 
-    #类型，偏移，个数
-    glDrawArrays(GL_POINTS, 0, 3);
+    #类型，偏移，顶点个数
+    glDrawArrays( GL_TRIANGLES, 0, $vtx_n );
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
 
-    glPopMatrix();
     glutSwapBuffers();
 }
 
 sub idle 
 {
-    sleep 0.02;
+    sleep 0.05;
     glutPostRedisplay();
 }
 
@@ -54,6 +58,7 @@ sub init
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glEnable(GL_DEPTH_TEST);
     glPointSize(5.0);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
 sub reshape
@@ -91,7 +96,7 @@ sub main
     our $MAIN;
 
     glutInit();
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH_TEST );
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH_TEST | GLUT_MULTISAMPLE );
     glutInitWindowSize($WIDTH, $HEIGHT);
     glutInitWindowPosition(100, 100);
     $WinID = glutCreateWindow("DrawArrays");

@@ -1,5 +1,6 @@
 use feature 'state';
 use IO::Handle;
+use Time::HiRes qw/sleep/;
 use OpenGL qw/ :all /;
 use OpenGL::Config;
 
@@ -12,9 +13,11 @@ BEGIN
     our $WIDTH  = 700;
     our ($rx, $ry, $rz) = (0.0, 0.0, 0.0);
 
-    our $count = 100;
-    our @verts  = map { rand(1.0), rand(1.0), rand(1.0) } ( 1.. $count );
-    our @colors = map { rand(1.0), rand(1.0), rand(1.0) } ( 1.. $count );
+    our $tri_n = 5;
+    our $vtx_n = $tri_n * 3;
+    our $ele_n = $tri_n * 3 * 3;
+    our @verts  = map { rand(1.0), rand(1.0), rand(1.0) } ( 1.. $ele_n );
+    our @colors = map { rand(1.0), rand(1.0), rand(1.0) } ( 1.. $ele_n );
 
     for ( my $i = 0; $i <= $#verts; $i+=3 )
     {
@@ -38,8 +41,8 @@ sub display
     glVertexPointer_c(3, GL_FLOAT, 0, $verts->ptr);
     glColorPointer_c( 3, GL_FLOAT, 0, $colors->ptr);
 
-    #类型，偏移，顶点*分量的个数（注意不是顶点的个数，通常每个顶点三个分量）
-    glDrawArrays( GL_TRIANGLES, 0, 30 );
+    #类型，偏移，顶点个数
+    glDrawArrays( GL_TRIANGLES, 0, $vtx_n );
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
 
@@ -85,8 +88,8 @@ sub hitkey
 
     if ( $k eq 'a') 
     {
-        @verts  = map { rand(1.0) } ( 1.. $count *3 );
-        @colors = map { rand(1.0) } ( 1.. $count *3 );
+        @verts  = map { rand(1.0) } ( 1.. $ele_n *3 );
+        @colors = map { rand(1.0) } ( 1.. $ele_n *3 );
     }
 
 }
