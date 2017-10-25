@@ -46,7 +46,6 @@ sub display
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
 
-    glPopMatrix();
     glutSwapBuffers();
 }
 
