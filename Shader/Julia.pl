@@ -19,9 +19,9 @@ STDOUT->autoflush(1);
 our $shdr;
 
 our $ang = 0.0;
-our $iter = 1000.0;
-our $test = 80.0;
-our $scale = 50.0;
+our $iter = 250.0;
+our $test = 1000.0;
+our $scale = 100.0;
 our ($cx, $cy);
 our ($movex, $movey) = (0.0, 0.0);
 
