@@ -52,6 +52,7 @@ BEGIN
     sub idle 
     {
         sleep 0.02;
+        print "abc"; #did not happen
         glutPostRedisplay();
     }
 
@@ -89,18 +90,11 @@ BEGIN
         glutSwapBuffers();
     }
 
-    sub idle 
-    {
-        sleep 0.02;
-        print "abc";
-        glutPostRedisplay();
-    }
-
     sub reshape
     {
         my ($w, $h) = (shift, shift);
         state $fa = 100.0;
-        glViewport( 0.0, 0.0, $w, $h );
+        glViewport( 50.0, 50.0, $w, $h );
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         glOrtho(-100.0, 100.0, -100.0,100.0, 0.0, $fa*2.0); 
