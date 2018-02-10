@@ -81,7 +81,7 @@ sub main
     our $MAIN;
 
     glutInit();
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH_TEST );
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH );
     glutInitWindowSize($WIDTH, $HEIGHT);
     glutInitWindowPosition(100, 100);
     $WinID = glutCreateWindow("DrawArrays");
