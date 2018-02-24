@@ -33,7 +33,7 @@ sub display
     }
 
     # GL_MULT 是对缓冲区的内容 和 value 值相乘，用于淡化或者加深
-    glAccum(GL_MULT, 0.6 );
+    glAccum(GL_MULT, 0.8 );
     glAccum(GL_RETURN, 1.0);
 
     $iter += 1.0;
@@ -42,7 +42,7 @@ sub display
 
 sub idle 
 {
-    sleep 0.03;
+    sleep 0.02;
     glutPostRedisplay();
 }
 
