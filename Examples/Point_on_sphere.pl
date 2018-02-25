@@ -40,7 +40,8 @@ BEGIN
 
     for my $n ( 1 .. $parts )
     {
-        ($len, $ang) = ( sqrt(rand(1.0))*20.0, $n/$parts * 6.28 );
+        #($len, $ang) = ( rand(20.0), rand(6.28) );
+        ($len, $ang) = ( 20.0, $n/$parts * 6.28 );
         $inx = $len * sin( $ang );
         $iny = $len * cos( $ang );
         for my $m ( 1 .. $parts )
