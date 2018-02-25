@@ -1,3 +1,10 @@
+=info
+    Auth: 523066680/vicyang
+    Date: 2018-02
+
+    备注: 在AMD显卡上测试没有运动模糊效果
+=cut
+
 use feature 'state';
 use IO::Handle;
 use Time::HiRes qw/sleep/;
