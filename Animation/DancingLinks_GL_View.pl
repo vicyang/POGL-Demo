@@ -1,11 +1,7 @@
 =info
-    DLX 解数独方案，Perl 实现
+    DancingLinks 求解精确覆盖问题 Perl 实现
     523066680 2017-09
-
     https://zhuanlan.zhihu.com/PerlExample
-    0.41_multi 基本完善
-    0.5 格式调整
-    0.51 去掉 print_nodes函数
 =cut
 
 use strict;
@@ -53,9 +49,8 @@ our $SHARE :shared;
 #exit;
 
 DancingLinks::print_links( $C->[0] );
-my $th = threads->create( \&dance, $C->[0], \@answer, 0 );
+our $th = threads->create( \&dance, $C->[0], \@answer, 0 );
 $th->detach();
-#printf "%s\n", join(",", map { $_->{row} } @answer);
 main();
 
 DANCING:
@@ -106,6 +101,8 @@ DANCING:
         my @count_array;
         my $res = 0;
 
+        clone_DLX( $head, $SHARE );
+        sleep 0.2;
         remove_col( $c );
 
         while ( $r != $c )
@@ -139,6 +136,9 @@ DANCING:
         }
 
         resume_col( $c );
+        clone_DLX( $head, $SHARE );
+        sleep 0.1;
+
         return $res;
     }
 
@@ -250,7 +250,16 @@ sub display
 
 sub idle 
 {
+    our ($th);
+    state $printed = 0;
     sleep 0.05;
+
+    if ( ! $th->is_running() and $printed == 0  )
+    {
+        $printed = 1;
+        printf "Result: %s\n", join(",", map { $_->{row} } @answer);
+    }
+    
     glutPostRedisplay();
 }
 
