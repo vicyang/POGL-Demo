@@ -214,6 +214,7 @@ sub display
         {
             if ( $SHARE->[$r][$c] != 0 )
             {
+                #glColor3f( $SHARE->[$r][$c]/5.0, 0.0, 0.0 );
                 glVertex3f( $c * 8.0, -$r * 8.0, 0.0 );
             }
         }
