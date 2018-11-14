@@ -23,6 +23,7 @@ use threads;
 use threads::shared;
 STDOUT->autoflush(1);
 
+
 BEGIN
 {
     our $WinID;
@@ -38,7 +39,7 @@ BEGIN
 }
 
 our $mat;
-our $mat_rows = 10;
+our $mat_rows = 30;
 our $mat_cols = 20;
 make_mat( \$mat, $mat_rows, $mat_cols );
 DancingLinks::init( $mat, $mat_rows, $mat_cols  );
@@ -55,7 +56,6 @@ DancingLinks::print_links( $C->[0] );
 my $th = threads->create( \&dance, $C->[0], \@answer, 0 );
 $th->detach();
 #printf "%s\n", join(",", map { $_->{row} } @answer);
-
 main();
 
 DANCING:
@@ -71,11 +71,11 @@ DANCING:
         $SHARE = shared_clone( [ map { [map { 0 } (0..$mat_cols)] } (0..$mat_rows) ] );
         for ( ; $c != $head; $c = $c->{right} )
         {
-            $ref->[0][ $c->{col} ] = shared_clone( $c );
+            $SHARE->[0][ $c->{col} ] = 1;
             $vt = $c->{down};
             for ( ; $vt != $c; $vt = $vt->{down} )
             {
-                $SHARE->[$vt->{row}][$vt->{col}] = shared_clone( $vt );
+                $SHARE->[$vt->{row}][$vt->{col}] = 1;
             }
         }
     }
@@ -85,8 +85,6 @@ DANCING:
         our $SHARE;
         my ($head, $answer, $lv) = @_;
 
-        clone_DLX( $head, $SHARE );
-        sleep 0.5;
         return 1 if ( $head->{right} == $head );
 
         my $c = $head->{right};
@@ -112,13 +110,13 @@ DANCING:
 
         while ( $r != $c )
         {
-            
             $ele = $r->{right};
-
             while ( $ele != $r )
             {
                 remove_col( $ele->{top} );
                 $ele = $ele->{right};
+                clone_DLX( $head, $SHARE );
+                sleep 0.1;
             }
 
             $res = dance($head, $answer, $lv+1);
@@ -133,6 +131,8 @@ DANCING:
             {
                 resume_col( $ele->{top} );
                 $ele = $ele->{left};
+                clone_DLX( $head, $SHARE );
+                sleep 0.1;
             }
          
             $r = $r->{down};
@@ -192,6 +192,8 @@ DANCING:
 sub make_mat
 {
     my ($ref, $rows, $cols) = @_;
+    #srand(1); # dancing long time, rows=50 cols=20
+    srand(1);
     $RandMatrix::n = 8;     #实际有效的行数
     $RandMatrix::m = $cols;
     RandMatrix::create_mat( $ref );
@@ -201,11 +203,24 @@ sub make_mat
 
 sub display
 {
-    our ($C, @SAVE, $DID, @color_table, $WinID, $SHARE);
+    our ($C, @color_table, $WinID, $SHARE);
     glColor3f(1.0, 1.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    grep { printf "%s\n", join( "", @$_ ) } @$SHARE;
+    glBegin(GL_POINTS);
+    for my $r ( 0 .. $mat_rows )
+    {
+        for my $c ( 0 .. $mat_cols )
+        {
+            if ( $SHARE->[$r][$c] != 0 )
+            {
+                glVertex3f( $c * 8.0, -$r * 8.0, 0.0 );
+            }
+        }
+    }
+    glEnd();
+
+
     # printf "\n";
 =info
     my $vt;
@@ -242,7 +257,7 @@ sub idle
 sub init
 {
     glClearColor(0.0, 0.0, 0.0, 0.0);
-    glPointSize(2.0);
+    glPointSize(6.0);
 }
 
 sub reshape
@@ -255,7 +270,7 @@ sub reshape
     glViewport(0, 0, $w, $h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(-100, $w-100, -$hzhalf, $hzhalf, 0.0, $fa*2.0); 
+    glOrtho(-100, $w-100, -($h-100), 100, 0.0, $fa*2.0); 
     #glFrustum(-100.0, $WIDTH-100.0, -100.0, $HEIGHT-100.0, 800.0, $fa*5.0); 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
