@@ -40,8 +40,7 @@ our $mat_cols = 20;
 make_mat( \$mat, $mat_rows, $mat_cols );
 DancingLinks::init( $mat, $mat_rows, $mat_cols  );
 
-our @answer =  map { [] } (1..20);
-share(@answer);
+our @answer :shared; # = map { {} } (1..20);
 our $C = clone( $DancingLinks::C );
 our $SHARE :shared;
 $SHARE = shared_clone( [ map { [map { 0 } (0..$mat_cols)] } (0..$mat_rows) ] );
@@ -85,15 +84,15 @@ DANCING:
 
         my $c = $head->{right};
         my $min = $c;
-
+=no opt
         #get minimal column node
         while ( $c != $head )
         {
             if ( $c->{count} < $min->{count} ) { $min = $c; }
             $c = $c->{right};
         }
-
         $c = $min;
+=cut
         return 0 if ( $c->{count} <= 0 );
 
         my $r = $c->{down};
@@ -101,9 +100,6 @@ DANCING:
 
         my @count_array;
         my $res = 0;
-
-        clone_DLX( $head, $SHARE );
-        sleep 0.2;
         remove_col( $c );
 
         while ( $r != $c )
@@ -113,7 +109,6 @@ DANCING:
             {
                 remove_col( $ele->{top} );
                 $ele = $ele->{right};
-                sleep 0.1;
             }
 
             $res = dance($head, $answer, $lv+1);
@@ -128,7 +123,6 @@ DANCING:
             {
                 resume_col( $ele->{top} );
                 $ele = $ele->{left};
-                sleep 0.1;
             }
          
             $r = $r->{down};
@@ -143,7 +137,8 @@ DANCING:
         our $SHARE;
         my ( $sel ) = @_;
 
-        $SHARE->[ $sel->{row} ][ $sel->{col} ] = 2;
+        $SHARE->[ $sel->{row} ][ $sel->{col} ] = 5;
+        #sleep 0.1;
         $sel->{left}{right} = $sel->{right};
         $sel->{right}{left} = $sel->{left};
 
@@ -153,23 +148,27 @@ DANCING:
         for ( ; $vt != $sel; $vt = $vt->{down} )
         {
             $hz = $vt->{right};
+            #$SHARE->[ $hz->{row} ][ $hz->{col} ] = 0;
             for (  ; $hz != $vt; $hz = $hz->{right})
             {
-                $SHARE->[ $hz->{row} ][ $hz->{col} ] = 4;
-
+                #$SHARE->[ $hz->{row} ][ $hz->{col} ] = 0;
+                sleep 0.01;
                 $hz->{up}{down} = $hz->{down};
                 $hz->{down}{up} = $hz->{up};
                 $hz->{top}{count} --;
+                #$SHARE->[ $hz->{row} ][ $hz->{col} ] = 0;
             }
             $hz->{top}{count} --;
         }
+
+        sleep 0.1;
     }
 
     sub resume_col
     {
         my ( $sel ) = @_;
 
-        $SHARE->[ $sel->{row} ][ $sel->{col} ] = 0;
+        $SHARE->[ $sel->{row} ][ $sel->{col} ] = 1;
         $sel->{left}{right} = $sel;
         $sel->{right}{left} = $sel;
 
@@ -179,10 +178,11 @@ DANCING:
         for ( ; $vt != $sel; $vt = $vt->{down})
         {
             $hz = $vt->{right};
+            #$SHARE->[ $vt->{row} ][ $vt->{col} ] = 3;
             for (  ; $hz != $vt; $hz = $hz->{right})
             {
-                $SHARE->[ $hz->{row} ][ $hz->{col} ] = 0;
-
+                #$SHARE->[ $hz->{row} ][ $hz->{col} ] = 3;
+                sleep 0.02;
                 $hz->{up}{down} = $hz;
                 $hz->{down}{up} = $hz;
                 $hz->{top}{count} ++;
@@ -218,37 +218,12 @@ sub display
             if ( $SHARE->[$r][$c] != 0 )
             {
                 glColor3f( @{$color_table[ $SHARE->[$r][$c] ]} );
-                glVertex3f( $c * 8.0, -$r * 8.0, 0.0 );
+                glVertex3f( $c * 10.0, -$r * 10.0, 0.0 );
             }
         }
     }
     glEnd();
 
-
-    # printf "\n";
-=info
-    my $vt;
-    my $hz;
-    my $head = $SHARE->[0];
-    my $c = $head->{right};
-    return if ($head->{right} == $head);
-
-    #DancingLinks::print_links( $head );
-
-    glBegin(GL_POINTS);
-    for ( ; $c != $head; $c = $c->{right} )
-    {
-        glVertex3f( $c->{col}*4.0, -$c->{row}*4.0, 0.0 );
-        $vt = $c->{down};
-        for ( ; $vt != $c; $vt = $vt->{down} )
-        {
-            #printf "%d %d %d\n", $vt->{row}, $vt->{col}, $vt->{val};
-            #glColor3f( @{$color_table[ $vt->{val} ]} );
-            glVertex3f( $vt->{col}*4.0, -$vt->{row}*4.0, 0.0 );
-        }
-    }
-    glEnd();
-=cut
     glutSwapBuffers();
 }
 
@@ -270,7 +245,7 @@ sub idle
 sub init
 {
     glClearColor(0.0, 0.0, 0.0, 0.0);
-    glPointSize(6.0);
+    glPointSize(8.0);
 }
 
 sub reshape
