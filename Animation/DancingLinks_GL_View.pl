@@ -26,7 +26,7 @@ BEGIN
     our $HEIGHT = 600;
     our $WIDTH  = 1000;
     our @color_table = (
-            [0.0, 0.0, 1.0], [1.0, 1.0, 0.0], [1.0, 0.0, 1.0],
+            [0.0, 0.0, 0.0], [1.0, 1.0, 0.0], [0.5, 0.8, 1.0],
             [0.0, 1.0, 1.0], [0.5, 1.0, 0.5], [1.0, 0.5, 0.5],
             [0.5, 0.5, 1.0], [0.3, 0.5, 0.8], [0.5, 0.3, 0.8],
             [0.8, 0.5, 0.3],
@@ -44,6 +44,8 @@ our @answer =  map { [] } (1..20);
 share(@answer);
 our $C = clone( $DancingLinks::C );
 our $SHARE :shared;
+$SHARE = shared_clone( [ map { [map { 0 } (0..$mat_cols)] } (0..$mat_rows) ] );
+clone_DLX( $C->[0], $SHARE );
 #grep { printf "%s\n", join( "", @$_ ) } @$SHARE;
 
 #exit;
@@ -59,11 +61,10 @@ DANCING:
     {
         our $SHARE;
         my ( $head, $ref )= @_;
-
         my $vt;
         my $hz;
         my $c = $head->{right};
-        $SHARE = shared_clone( [ map { [map { 0 } (0..$mat_cols)] } (0..$mat_rows) ] );
+        
         for ( ; $c != $head; $c = $c->{right} )
         {
             $SHARE->[0][ $c->{col} ] = 1;
@@ -112,7 +113,6 @@ DANCING:
             {
                 remove_col( $ele->{top} );
                 $ele = $ele->{right};
-                clone_DLX( $head, $SHARE );
                 sleep 0.1;
             }
 
@@ -128,7 +128,6 @@ DANCING:
             {
                 resume_col( $ele->{top} );
                 $ele = $ele->{left};
-                clone_DLX( $head, $SHARE );
                 sleep 0.1;
             }
          
@@ -136,16 +135,15 @@ DANCING:
         }
 
         resume_col( $c );
-        clone_DLX( $head, $SHARE );
-        sleep 0.1;
-
         return $res;
     }
 
     sub remove_col
     {
+        our $SHARE;
         my ( $sel ) = @_;
 
+        $SHARE->[ $sel->{row} ][ $sel->{col} ] = 2;
         $sel->{left}{right} = $sel->{right};
         $sel->{right}{left} = $sel->{left};
 
@@ -157,6 +155,8 @@ DANCING:
             $hz = $vt->{right};
             for (  ; $hz != $vt; $hz = $hz->{right})
             {
+                $SHARE->[ $hz->{row} ][ $hz->{col} ] = 4;
+
                 $hz->{up}{down} = $hz->{down};
                 $hz->{down}{up} = $hz->{up};
                 $hz->{top}{count} --;
@@ -169,6 +169,7 @@ DANCING:
     {
         my ( $sel ) = @_;
 
+        $SHARE->[ $sel->{row} ][ $sel->{col} ] = 0;
         $sel->{left}{right} = $sel;
         $sel->{right}{left} = $sel;
 
@@ -180,6 +181,8 @@ DANCING:
             $hz = $vt->{right};
             for (  ; $hz != $vt; $hz = $hz->{right})
             {
+                $SHARE->[ $hz->{row} ][ $hz->{col} ] = 0;
+
                 $hz->{up}{down} = $hz;
                 $hz->{down}{up} = $hz;
                 $hz->{top}{count} ++;
@@ -214,7 +217,7 @@ sub display
         {
             if ( $SHARE->[$r][$c] != 0 )
             {
-                #glColor3f( $SHARE->[$r][$c]/5.0, 0.0, 0.0 );
+                glColor3f( @{$color_table[ $SHARE->[$r][$c] ]} );
                 glVertex3f( $c * 8.0, -$r * 8.0, 0.0 );
             }
         }
