@@ -31,7 +31,7 @@ sub func
     while (1)
     {
         $iter += 1.0;
-        sleep rand(0.2);
+        sleep 0.1;
         print "in thread $id, sleep $rnd\n";
     }
 }
