@@ -19,15 +19,24 @@ our $WinID;
 
 INIT
 {
-    our $SIZE = 60;
+    use Imager;
+    our $SIZE = 30;
     our $font = Imager::Font->new(file  => 'C:/windows/fonts/STXINGKA.TTF',
                               size  => $SIZE );
 
-
-    our $TEXT = "天之道，损有余而补不足。";
-    our @TEXT = split("", $TEXT);
-    our @TEXT_BUFF;
+        #glRasterPos3f( $id * $SIZE/1.2, 20.0, 0.0 );
+        #glDrawPixels_c( $W, $H, GL_RGBA, GL_UNSIGNED_BYTE, $array->ptr() );
 }
+
+our @TEXT = split("", "十步杀一人，千里不留行。事了拂衣去，深藏身与名。" );
+our @TEXT_DATA = map { {} } ( 0 .. $#TEXT );
+
+for my $id ( 0 .. $#TEXT )
+{
+    get_text_map( $TEXT[$id] , $TEXT_DATA[$id] );
+    printf "%d %d\n", $TEXT_DATA[$id]->{h}, $TEXT_DATA[$id]->{w};
+}
+
 
 Main();
 
@@ -48,41 +57,37 @@ sub get_text_map
                color => 'gold',
                aa    => 1,     # anti-alias
             );
-
-    my ($H, $W) = ($img->getheight(), $img->getwidth());
-    #printf "width: %d, height: %d\n", $W, $H;
+    my $h = $img->getheight();
+    my $w = $img->getwidth();
+    $ref->{h} = $h, $ref->{w} = $w;
 
     my @rasters;
     my @colors;
-    for my $y ( reverse 0 .. $H-1 )
+    for my $y ( reverse 0 .. $h - 1 )
     {
-        @colors = $img->getpixel( x => [ 0 .. $W-1 ], y => [$y] );
+        @colors = $img->getpixel( x => [ 0 .. $w - 1 ], y => [$y] );
         grep { push @rasters, $_->rgba  } @colors;
     }
-    #print Dumper $$ref, "\n";
 
-    $$ref = OpenGL::Array->new( scalar( @rasters ), GL_UNSIGNED_BYTE ); 
-    ${$ref}->assign(0, @rasters);
-
-    return ($H, $W);
+    $ref->{array} = OpenGL::Array->new( scalar( @rasters ), GL_UNSIGNED_BYTE ); 
+    $ref->{array}->assign(0, @rasters);
 }
 
 sub display
 {
     state $iter = 0;
+    my $xbase = 0.0;
+    my $ybase = 50.0;
     glClear(GL_COLOR_BUFFER_BIT);
 
-    # my $array = OpenGL::Array->new( scalar( @rasters ), GL_UNSIGNED_BYTE ); 
-    # $array->assign(0, @rasters);
-
-
-    my ($H, $W, $array);
-    glRasterPos3f( 0.0, 20.0, 0.0 );
+    my $ref;
     for my $id ( 0 .. $iter )
     {
-        ($H, $W) = get_text_map( $TEXT[$id] , \$array);
-        glRasterPos3f( $id * $SIZE/1.2, 20.0, 0.0 );
-        glDrawPixels_c( $W, $H, GL_RGBA, GL_UNSIGNED_BYTE, $array->ptr() );
+        $ref = $TEXT_DATA[ $id ];
+        glRasterPos3f( $xbase , $ybase, 0.0 );
+        glDrawPixels_c( $ref->{w}, $ref->{h}, GL_RGBA, GL_UNSIGNED_BYTE, $ref->{array}->ptr() );
+        $xbase += $SIZE;
+        if ( $TEXT[$id] eq "。" ) { $ybase -= $SIZE, $xbase = 0.0 }
     }
 
     $iter ++ if $iter < $#TEXT;
