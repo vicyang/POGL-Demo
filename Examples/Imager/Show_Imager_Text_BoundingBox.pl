@@ -43,7 +43,7 @@ INIT
                               color => $blue,
                               size  => $SIZE );
 
-    our $TEXT = "了天ag了";
+    our $TEXT = "了天ag人";
     our $bbox = $font->bounding_box( string => $TEXT );
     our $img = Imager->new( xsize=>$bbox->total_width+59, ysize=>$bbox->font_height , channels=>4 );
     our ($H, $W) = ($img->getheight(), $img->getwidth());
@@ -81,19 +81,20 @@ INIT
     printf "%3d left_bearing\n", $bbox->left_bearing;
     printf "%3d right_bearing\n", abs $bbox->right_bearing-1;
 
-    draw_hz_line( 'white', $bbox->total_width, $baseline );
-    #draw_hz_line( 'white', $bbox->total_width, $baseline + $bbox->start_offset );
-    draw_hz_line( 'green', $bbox->total_width, $baseline + abs($bbox->global_descent) - 1 );
-    draw_hz_line( 'red',   $bbox->total_width, $baseline + abs $bbox->descent );
-    draw_hz_line( 'red', $bbox->total_width,  $baseline - $bbox->global_ascent  );
-    draw_hz_line( 'blue', $bbox->total_width, $baseline - $bbox->ascent );
-    #draw_hz_line( 'orange',  $bbox->total_width,  $baseline + (abs $bbox->descent) - $bbox->text_height -1 );
+    draw_hz_line( 'white', $bbox->display_width, $baseline );
+    #draw_hz_line( 'white', $bbox->display_width, $baseline + $bbox->start_offset );
+    draw_hz_line( 'green', $bbox->display_width, $baseline + abs($bbox->global_descent) - 1 );
+    draw_hz_line( 'red',   $bbox->display_width, $baseline + abs $bbox->descent );
+    draw_hz_line( 'red', $bbox->display_width,  $baseline - $bbox->global_ascent  );
+    draw_hz_line( 'blue', $bbox->display_width, $baseline - $bbox->ascent );
+    #draw_hz_line( 'orange',  $bbox->display_width,  $baseline + (abs $bbox->descent) - $bbox->text_height -1 );
 
     draw_vt_line( 'red',     60, $bbox->start_offset ); # 同 left_bearing
-    draw_vt_line( 'red',     50, $bbox->end_offset );   # not suggest to use
-    draw_vt_line( 'blue',    50, $bbox->total_width );  # not suggest to use
-    draw_vt_line( 'green',   30, $bbox->display_width + $bbox->left_bearing );
-    draw_vt_line( 'yellow',  30, $bbox->left_bearing );
+    # draw_vt_line( 'red',     50, $bbox->end_offset );   # not suggest to use
+    # draw_vt_line( 'blue',    50, $bbox->total_width );  # not suggest to use
+    draw_vt_line( 'green',   30, $bbox->display_width + $bbox->left_bearing );  # 右边界
+    draw_vt_line( 'yellow',  30, $bbox->left_bearing ); # 左边啤位
+    #右边啤位
     draw_vt_line( 'yellow',  30, $bbox->display_width + $bbox->left_bearing + abs($bbox->right_bearing) );
 
     printf "%d %d\n", $bbox->end_offset, $bbox->global_descent;
