@@ -5,10 +5,13 @@
 
 use utf8;
 use Encode;
+use feature 'state';
 use Time::HiRes qw/time sleep/;
 use OpenGL qw/ :all /;
 use OpenGL::Config;
+use Data::Dumper;
 use Imager;
+STDOUT->autoflush(1);
 
 our $SIZE_X = 620;
 our $SIZE_Y = 520;
@@ -17,18 +20,28 @@ our $WinID;
 INIT
 {
     our $SIZE = 60;
-    $blue = Imager::Color->new("#0000FF");
-    $font = Imager::Font->new(file  => 'C:/windows/fonts/STXINGKA.TTF',
-                              color => $blue,
+    our $font = Imager::Font->new(file  => 'C:/windows/fonts/STXINGKA.TTF',
                               size  => $SIZE );
 
-    my $TEXT = "火凤燎原，火";
-    my $bbox = $font->bounding_box( string => $TEXT );
+
+    our $TEXT = "天之道，损有余而补不足。";
+    our @TEXT = split("", $TEXT);
+    our @TEXT_BUFF;
+}
+
+Main();
+
+sub get_text_map
+{
+    our ($font, $SIZE);
+    my ( $char, $ref ) = @_;
+
+    my $bbox = $font->bounding_box( string => $char );
     my $img = Imager->new(xsize=>$bbox->total_width, ysize=>$SIZE, channels=>4);
 
     $img->string(
                font  => $font,
-               text  => $TEXT, #or string => "..."
+               text  => $char,
                x     => -$bbox->left_bearing,
                y     => 0 + $SIZE + $bbox->descent,     #基线偏移
                size  => $SIZE,
@@ -36,33 +49,43 @@ INIT
                aa    => 1,     # anti-alias
             );
 
-    our ($H, $W) = ($img->getheight(), $img->getwidth());
-    printf "width: %d, height: %d\n", $W, $H;
+    my ($H, $W) = ($img->getheight(), $img->getwidth());
+    #printf "width: %d, height: %d\n", $W, $H;
 
-    our @rasters;
+    my @rasters;
     my @colors;
     for my $y ( reverse 0 .. $H-1 )
     {
-        @colors = $img->getpixel(x=>[ 0 .. $W-1 ], y=>[ $y ]);
+        @colors = $img->getpixel( x => [ 0 .. $W-1 ], y => [$y] );
         grep { push @rasters, $_->rgba  } @colors;
     }
+    #print Dumper $$ref, "\n";
 
-    our $array = OpenGL::Array->new( scalar( @rasters ), GL_UNSIGNED_BYTE ); 
-    $array->assign(0, @rasters);
+    $$ref = OpenGL::Array->new( scalar( @rasters ), GL_UNSIGNED_BYTE ); 
+    ${$ref}->assign(0, @rasters);
+
+    return ($H, $W);
 }
-
-&Main();
 
 sub display
 {
+    state $iter = 0;
     glClear(GL_COLOR_BUFFER_BIT);
 
     # my $array = OpenGL::Array->new( scalar( @rasters ), GL_UNSIGNED_BYTE ); 
     # $array->assign(0, @rasters);
 
+
+    my ($H, $W, $array);
     glRasterPos3f( 0.0, 20.0, 0.0 );
-    glutBitmapString( GLUT_BITMAP_HELVETICA_18, "Character 23");
-    glDrawPixels_c( $W, $H, GL_RGBA, GL_UNSIGNED_BYTE, $array->ptr() );
+    for my $id ( 0 .. $iter )
+    {
+        ($H, $W) = get_text_map( $TEXT[$id] , \$array);
+        glRasterPos3f( $id * $SIZE/1.2, 20.0, 0.0 );
+        glDrawPixels_c( $W, $H, GL_RGBA, GL_UNSIGNED_BYTE, $array->ptr() );
+    }
+
+    $iter ++ if $iter < $#TEXT;
 
     glutSwapBuffers();
 }
