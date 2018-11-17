@@ -16,26 +16,26 @@ STDOUT->autoflush(1);
 our $SIZE_X = 620;
 our $SIZE_Y = 520;
 our $WinID;
+our $pause = 1;
 
 INIT
 {
     use Imager;
     our $SIZE = 30;
-    our $font = Imager::Font->new(file  => 'C:/windows/fonts/STXINGKA.TTF',
+    our $font = Imager::Font->new(file  => encode('gbk', 'C:/windows/fonts/STXINGKA.TTF'), #STXINGKA.TTF
                               size  => $SIZE );
+    our $bbox = $font->bounding_box(string=>"");
 
-        #glRasterPos3f( $id * $SIZE/1.2, 20.0, 0.0 );
-        #glDrawPixels_c( $W, $H, GL_RGBA, GL_UNSIGNED_BYTE, $array->ptr() );
+    our @TEXT = split("", "十步杀一人，千里不留行。事了拂衣去，深藏身与名。" );
+    our @TEXT_DATA = map { {} } ( 0 .. $#TEXT );
+
+    for my $id ( 0 .. $#TEXT )
+    {
+        get_text_map( $TEXT[$id] , $TEXT_DATA[$id] );
+        printf "%d %d\n", $TEXT_DATA[$id]->{h}, $TEXT_DATA[$id]->{w};
+    }
 }
 
-our @TEXT = split("", "十步杀一人，千里不留行。事了拂衣去，深藏身与名。" );
-our @TEXT_DATA = map { {} } ( 0 .. $#TEXT );
-
-for my $id ( 0 .. $#TEXT )
-{
-    get_text_map( $TEXT[$id] , $TEXT_DATA[$id] );
-    printf "%d %d\n", $TEXT_DATA[$id]->{h}, $TEXT_DATA[$id]->{w};
-}
 
 
 Main();
@@ -46,19 +46,22 @@ sub get_text_map
     my ( $char, $ref ) = @_;
 
     my $bbox = $font->bounding_box( string => $char );
-    my $img = Imager->new(xsize=>$bbox->total_width, ysize=>$SIZE, channels=>4);
+    my $img = Imager->new(xsize=>$bbox->display_width+$bbox->left_bearing, 
+                          ysize=>$bbox->font_height, channels=>4);
+
+    my $h = $img->getheight();
+    my $w = $img->getwidth();
 
     $img->string(
                font  => $font,
                text  => $char,
-               x     => -$bbox->left_bearing,
-               y     => 0 + $SIZE + $bbox->descent,     #基线偏移
+               x     => 0,
+               y     => $h + $bbox->global_descent,   # 基线 = 总高度 - 下沉
                size  => $SIZE,
                color => 'gold',
                aa    => 1,     # anti-alias
             );
-    my $h = $img->getheight();
-    my $w = $img->getwidth();
+
     $ref->{h} = $h, $ref->{w} = $w;
 
     my @rasters;
@@ -75,7 +78,8 @@ sub get_text_map
 
 sub display
 {
-    state $iter = 0;
+    our ($bbox);
+    state $iter = -1;
     my $xbase = 0.0;
     my $ybase = 50.0;
     glClear(GL_COLOR_BUFFER_BIT);
@@ -87,11 +91,10 @@ sub display
         glRasterPos3f( $xbase , $ybase, 0.0 );
         glDrawPixels_c( $ref->{w}, $ref->{h}, GL_RGBA, GL_UNSIGNED_BYTE, $ref->{array}->ptr() );
         $xbase += $SIZE;
-        if ( $TEXT[$id] eq "。" ) { $ybase -= $SIZE, $xbase = 0.0 }
+        if ( $TEXT[$id] eq "。" ) { $ybase -= $bbox->font_height , $xbase = 0.0 }
     }
 
-    $iter ++ if $iter < $#TEXT;
-
+    $iter ++ if ($iter < $#TEXT and $pause == 0);
     glutSwapBuffers();
 }
 
@@ -108,7 +111,7 @@ sub init
 
 sub idle 
 {
-    sleep 0.1;
+    sleep 0.2;
     glutPostRedisplay();
 }
 
@@ -133,6 +136,7 @@ sub hitkey
 {
     my $key = shift;
     glutDestroyWindow($WinID) if ( lc(chr($key)) eq 'q' );
+    if ( chr($key) eq 'p' ) { $pause = !$pause; }
 }
 
 sub Main 
@@ -140,8 +144,8 @@ sub Main
     glutInit();
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE );
     glutInitWindowSize($SIZE_X, $SIZE_Y);
-    glutInitWindowPosition(1,1);
-    our $WinID = glutCreateWindow("glBitmap");
+    glutInitWindowPosition(5, 100);
+    our $WinID = glutCreateWindow("Imager::Font");
     &init();
     glutDisplayFunc(\&display);
     glutKeyboardFunc(\&hitkey);
