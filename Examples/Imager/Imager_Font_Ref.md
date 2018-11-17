@@ -1,5 +1,6 @@
 * 关于字符的基线、啤线参考图
   http://www.myfirstfont.com/glossary.html
+  https://stackoverflow.com/questions/5995293/get-single-glyph-metrics-net
 
 bounding_box()
 

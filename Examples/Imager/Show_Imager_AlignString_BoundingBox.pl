@@ -33,9 +33,9 @@ our $WinID;
 
 INIT
 {
-    our $SIZE = 160;
+    our $SIZE = 120;
     $blue = Imager::Color->new("#0000FF");
-    $font = Imager::Font->new(file  => 'C:/windows/fonts/STXINGKA.TTF',
+    $font = Imager::Font->new(file  => 'C:/windows/fonts/STXINWEI.TTF',  #STXINGKA.TTF
                               color => $blue,
                               size  => $SIZE );
 
@@ -79,13 +79,12 @@ INIT
     printf "%3d right_bearing\n", abs $bbox->right_bearing-1;
 
     #draw_hz_line( 'white', $bbox->total_width,  $bbox->start_offset );
-    draw_hz_line( 'green', $bbox->total_width, $baseline - abs($bbox->global_descent) - 1 );
-    draw_hz_line( 'red', $bbox->total_width, $baseline + abs $bbox->descent );
-    # draw_hz_line( 'red', $bbox->total_width,  $bbox->global_ascent  );
-    # draw_hz_line( 'blue', $bbox->total_width, $bbox->ascent );
-    # draw_hz_line( 'orange',  $bbox->total_width, $baseline - $bbox->text_height+20 );
-    printf ":%d\n", $baseline-$bbox->text_height;
-    # draw_hz_line( 'green', $bbox->total_width, $bbox->text_height );
+    draw_hz_line( 'green', $bbox->total_width, $H-abs($bbox->global_descent) );
+    draw_hz_line( 'red', $bbox->total_width,  $H - abs $bbox->descent );
+    draw_hz_line( 'red', $bbox->total_width,  $H - $bbox->global_ascent  );
+    draw_hz_line( 'blue', $bbox->total_width, $H - $bbox->ascent );
+    draw_hz_line( 'green', $bbox->total_width, $bbox->text_height );
+    #draw_hz_line( 'green', $bbox->total_width, $bbox->font_height-6 );
 
     # draw_vt_line( 'red', $bbox->total_width, $bbox->end_offset );
     # draw_vt_line( 'blue', $bbox->total_width, $bbox->total_width );
