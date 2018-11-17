@@ -70,6 +70,8 @@ sub display
 sub init 
 {
     glClearColor(0.3, 0.6, 0.8, 1.0);
+    
+    # 通过开启混合，来避免位图的透明背景变黑问题
     glEnable(GL_BLEND);
     #glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_ALPHA);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
