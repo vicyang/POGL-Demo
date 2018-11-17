@@ -10,11 +10,15 @@
     如果 align => 0, 则x,y用于定位字符左上角的位置
     如果 align => 1, 则x,y用于定位字符基线的位置
 
-    global_descent -> 全局字符的底部延伸距离 (基线到底部的距离)
-    descent -> 当前文字的底部延伸距离
-    global_ascent -> 
-    ascent -> 
+    global_descent -> 全局字体下深 (基线到底部的距离)
+    descent -> 当前文字的下深
+    global_ascent -> 全局字体上高
+    ascent -> 上高
     
+    以下方法只为了兼容旧方案(有 bug)，不应该在新代码中使用
+    total_width() -> New code should use display_width().
+    end_offset()
+    pos_width()
 
 =cut
 
@@ -27,47 +31,37 @@ use Data::Dumper;
 use Imager;
 STDOUT->autoflush(1);
 
-our $SIZE_X = 620;
-our $SIZE_Y = 520;
+our $SIZE_X = 680;
+our $SIZE_Y = 500;
 our $WinID;
 
 INIT
 {
-    our $SIZE = 160;
+    our $SIZE = 150;
     $blue = Imager::Color->new("#0000FF");
     $font = Imager::Font->new(file  => 'C:/windows/fonts/STXINGKA.TTF',
                               color => $blue,
                               size  => $SIZE );
 
-    our $TEXT = "一天acfg";
+    our $TEXT = "了天ag了";
     our $bbox = $font->bounding_box( string => $TEXT );
-    our $img = Imager->new( xsize=>$bbox->total_width+59, ysize=>$SIZE, channels=>4 );
+    our $img = Imager->new( xsize=>$bbox->total_width+59, ysize=>$bbox->font_height , channels=>4 );
     our ($H, $W) = ($img->getheight(), $img->getwidth());
     printf "width: %d, height: %d\n", $W, $H;
     $img->box(xmin => 0, ymin => 0, xmax => $W, ymax => $H,
             filled => 1, color => '#336699');
 
-    my $baseline = $SIZE + $bbox->global_descent;
+    my $baseline = $H - abs $bbox->global_descent;
     $img->string(
                font  => $font,
                text  => $TEXT, #or string => "..."
                x     => 0,
-               y     => $baseline,
+               y     => $H - abs $bbox->global_descent ,
                size  => $SIZE,
                color => 'gold',
                aa    => 1,     # anti-alias
-               #align => 0,
+               align => 1,
             );
-
-    # my ($left, $top, $right, $bottom) = 
-    # $img->align_string(
-    #         text => $TEXT,
-    #         x => 0, y => 3,
-    #         halign =>'left', valign => 'top', 
-    #         font => $font,
-    #         color => 'gold',
-    #         aa => 1,
-    #     );
 
     draw_hz_line('gray', 20, 0);
     draw_vt_line('gray', 20, 0);
@@ -87,21 +81,20 @@ INIT
     printf "%3d left_bearing\n", $bbox->left_bearing;
     printf "%3d right_bearing\n", abs $bbox->right_bearing-1;
 
-    # draw_hz_line( 'white', $bbox->total_width, $baseline );
-    # #draw_hz_line( 'white', $bbox->total_width, $baseline + $bbox->start_offset );
-    # draw_hz_line( 'green', $bbox->total_width, $baseline + abs($bbox->global_descent) - 1 );
-    # draw_hz_line( 'red', $bbox->total_width, $baseline + abs $bbox->descent );
-    # draw_hz_line( 'red', $bbox->total_width, $baseline - $bbox->global_ascent  );
-    # draw_hz_line( 'blue', $bbox->total_width, $baseline - $bbox->ascent );
-    draw_hz_line( 'orange',  $bbox->total_width, $baseline - $bbox->text_height+20 );
-    printf ":%d\n", $baseline-$bbox->text_height;
-    # draw_hz_line( 'green', $bbox->total_width, $bbox->text_height );
+    draw_hz_line( 'white', $bbox->total_width, $baseline );
+    #draw_hz_line( 'white', $bbox->total_width, $baseline + $bbox->start_offset );
+    draw_hz_line( 'green', $bbox->total_width, $baseline + abs($bbox->global_descent) - 1 );
+    draw_hz_line( 'red',   $bbox->total_width, $baseline + abs $bbox->descent );
+    draw_hz_line( 'red', $bbox->total_width,  $baseline - $bbox->global_ascent  );
+    draw_hz_line( 'blue', $bbox->total_width, $baseline - $bbox->ascent );
+    #draw_hz_line( 'orange',  $bbox->total_width,  $baseline + (abs $bbox->descent) - $bbox->text_height -1 );
 
-    # draw_vt_line( 'red', $bbox->total_width, $bbox->end_offset );
-    # draw_vt_line( 'blue', $bbox->total_width, $bbox->total_width );
-    # draw_vt_line( 'green', $bbox->total_width, $bbox->display_width+1 );
-    # draw_vt_line( 'orange', $bbox->total_width, $bbox->left_bearing );
-    # draw_vt_line( 'yellow', $bbox->total_width, abs $bbox->right_bearing-1 );
+    draw_vt_line( 'red',     60, $bbox->start_offset ); # 同 left_bearing
+    draw_vt_line( 'red',     50, $bbox->end_offset );   # not suggest to use
+    draw_vt_line( 'blue',    50, $bbox->total_width );  # not suggest to use
+    draw_vt_line( 'green',   30, $bbox->display_width + $bbox->left_bearing );
+    draw_vt_line( 'yellow',  30, $bbox->left_bearing );
+    draw_vt_line( 'yellow',  30, $bbox->display_width + $bbox->left_bearing + abs($bbox->right_bearing) );
 
     printf "%d %d\n", $bbox->end_offset, $bbox->global_descent;
     printf join(", ", @$bbox);
