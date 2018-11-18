@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+# OpenGL-0.70\examples
 #
 #          texture
 #
