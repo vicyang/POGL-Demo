@@ -17,8 +17,7 @@ INIT
 {
     my $file = "colorful.png";
     my $img = Imager->new();
-    $img->read(file => $file)
-        or die "Cannot load $image_source: ", $image->errstr;
+    $img->read(file => $file) or die "Cannot load $file: ", $img->errstr;
 
     our ($H, $W) = ($img->getheight(), $img->getwidth());
     printf "width: %d, height: %d\n", $W, $H;
