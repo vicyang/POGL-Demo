@@ -66,6 +66,8 @@ INIT
     draw_hz_line('gray', 20, 0);
     draw_vt_line('gray', 20, 0);
 
+    printf "%s\n", join(", ", @$bbox);
+
     printf "%3d baseline\n",  $baseline;
     printf "%3d start_offset\n",  $bbox->start_offset;
     printf "%3d global_descent\n",$bbox->global_descent;
@@ -89,13 +91,12 @@ INIT
     draw_hz_line( 'blue', $bbox->display_width, $baseline - $bbox->ascent );
     #draw_hz_line( 'orange',  $bbox->display_width,  $baseline + (abs $bbox->descent) - $bbox->text_height -1 );
 
-    draw_vt_line( 'red',     60, $bbox->start_offset ); # 同 left_bearing
-    # draw_vt_line( 'red',     50, $bbox->end_offset );   # not suggest to use
-    # draw_vt_line( 'blue',    50, $bbox->total_width );  # not suggest to use
-    draw_vt_line( 'green',   30, $bbox->display_width + $bbox->left_bearing );  # 右边界
-    draw_vt_line( 'yellow',  30, $bbox->left_bearing ); # 左边啤位
-    #右边啤位
-    draw_vt_line( 'yellow',  30, $bbox->display_width + $bbox->left_bearing + abs($bbox->right_bearing) );
+    draw_vt_line( 'red',     60, $bbox->start_offset );   # 同 left_bearing
+    draw_vt_line( 'red',     50, $bbox->end_offset );     # not suggest to use
+    draw_vt_line( 'blue',    80, $bbox->advance_width );  # end_offset 的取代值， 右边界
+    #draw_vt_line( 'blue',    50, $bbox->total_width );   # not suggest to use
+    draw_vt_line( 'yellow',  30, $bbox->left_bearing );   # 左边啤位 
+    draw_vt_line( 'yellow',  30, $bbox->advance_width - $bbox->right_bearing );  #右边啤位
 
     printf "%d %d\n", $bbox->end_offset, $bbox->global_descent;
     printf join(", ", @$bbox);
