@@ -16,6 +16,12 @@ BEGIN
     our $spin=0.0;
 }
 
+INIT
+{
+    our $pic = {};
+    read_image( "png_24bit.png", $pic );
+}
+
 sub read_image
 {
     my ($file, $ref) = @_;
@@ -34,10 +40,11 @@ sub read_image
         grep { push @rasters, $_->rgba  } @colors;
     }
 
-    $$ref = OpenGL::Array->new( scalar( @rasters ), GL_UNSIGNED_BYTE ); 
-    ${$ref}->assign(0, @rasters);
+    $ref->{array} = OpenGL::Array->new( scalar( @rasters ), GL_UNSIGNED_BYTE ); 
+    $ref->{array}->assign(0, @rasters);
 
-    return ($H, $W, $array );
+    $ref->{h} = $H;
+    $ref->{w} = $W;
 }
 
 main();
@@ -45,31 +52,28 @@ main();
 sub display
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glLoadIdentity ();
-    glTranslatef(0.0, 0.0, -2.6);
 
     glPushMatrix();
     glRotatef($spin, 0.0, 1.0, 0.0);
-    glRotatef($spin, 0.0, 0.0, 1.0);
+    #glRotatef($spin, 0.0, 0.0, 1.0);
     glColor4f(0.3, 0.6, 0.8, 0.1);
     glBegin(GL_QUADS);
-        glTexCoord2f(0.0, 1.0); glVertex3f(-1.0, -1.0, 0.0);
-        glTexCoord2f(0.0, 0.0); glVertex3f(-1.0, 1.0, 0.0);
-        glTexCoord2f(1.0, 0.0); glVertex3f(1.0, 1.0, 0.0);
-        glTexCoord2f(1.0, 1.0); glVertex3f(1.0, -1.0, 0.0);
+        glTexCoord2f(0.0, 0.0); glVertex3f(0.0 , 0.0, 0.0);
+        glTexCoord2f(1.0, 0.0); glVertex3f($pic->{w}, 0.0, 0.0);
+        glTexCoord2f(1.0, 1.0); glVertex3f($pic->{w}, $pic->{h}, 0.0);
+        glTexCoord2f(0.0, 1.0); glVertex3f( 0.0, $pic->{h}, 0.0);
     glEnd();
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(-1.0, -1.0, 0.0);
-    glRotatef(-$spin, 0.0, 1.0, 0.0);
-    glRotatef($spin, 0.0, 0.0, 1.0);
-    glColor4f(0.3, 0.6, 0.8, 0.0);
+    glRotatef($spin*0.5, 0.0, 0.0, 1.0);
+    #glRotatef($spin, 0.0, 0.0, 1.0);
+    glColor4f(0.3, 0.6, 0.8, 0.1);
     glBegin(GL_QUADS);
-        glTexCoord2f(0.0, 1.0); glVertex3f(-1.0, -1.0, 0.0);
-        glTexCoord2f(0.0, 0.0); glVertex3f(-1.0, 1.0, 0.0);
-        glTexCoord2f(1.0, 0.0); glVertex3f(1.0, 1.0, 0.0);
-        glTexCoord2f(1.0, 1.0); glVertex3f(1.0, -1.0, 0.0);
+        glTexCoord2f(0.0, 0.0); glVertex3f(0.0 , 0.0, 0.0);
+        glTexCoord2f(1.0, 0.0); glVertex3f($pic->{w}, 0.0, 0.0);
+        glTexCoord2f(1.0, 1.0); glVertex3f($pic->{w}, $pic->{h}, 0.0);
+        glTexCoord2f(0.0, 1.0); glVertex3f( 0.0, $pic->{h}, 0.0);
     glEnd();
     glPopMatrix();
 
@@ -80,13 +84,14 @@ sub display
 
 sub idle 
 {
-    sleep 0.01;
-    $spin = $spin+1.0;
+    sleep 0.02;
+    $spin += 2.0;
     glutPostRedisplay();
 }
 
 sub init
 {
+    our $pic;
     glClearColor(0.0, 0.0, 0.0, 0.0);
 
     #glShadeModel (GL_SMOOTH);
@@ -98,11 +103,10 @@ sub init
     glBlendFunc(GL_SRC_COLOR, GL_DST_ALPHA);
     # glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-    my $array;
-    my ($h, $w, $image) = read_image( "png_24bit.png", \$array );
-
     printf "%d %d\n", $w, $h;
-    glTexImage2D_c(GL_TEXTURE_2D, 0, GL_RGBA, $w, $h, 0, GL_RGBA, GL_UNSIGNED_BYTE, $array->ptr() );
+    glTexImage2D_c(GL_TEXTURE_2D, 0, GL_RGBA, $pic->{w}, $pic->{h},
+                    0, GL_RGBA, 
+                    GL_UNSIGNED_BYTE, $pic->{array}->ptr() );
 
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
@@ -121,25 +125,16 @@ sub reshape
     my ($w, $h) = (shift, shift);
     my $vthalf = $w/2.0;
     my $hzhalf = $h/2.0;
-    my $fa = 100.0;
+    my $fa = 800.0;
 
     glViewport(0, 0, $w, $h);
-=temp
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(-$vthalf, $vthalf, -$hzhalf, $hzhalf, 0.0, $fa*2.0); 
+    glOrtho(-$vthalf, $vthalf, -$hzhalf, $hzhalf, 0.0, $fa*2.0);
     #glFrustum(-100.0, $WIDTH-100.0, -100.0, $HEIGHT-100.0, 800.0, $fa*5.0); 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     gluLookAt(0.0,0.0,$fa, 0.0,0.0,0.0, 0.0,1.0, $fa);
-=cut
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(60.0, 1.0 , 1.0, 30.0);
-
-    glMatrixMode(GL_MODELVIEW);
-
 }
 
 sub hitkey
