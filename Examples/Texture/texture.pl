@@ -131,7 +131,7 @@ sub init
     -r $file or $file = "examples/$file";
     ($w,$h,$image) = &read_bin_image($file);
 
-    glTexImage2D_s(GL_TEXTURE_2D, 0, 3, $w,$h, 0, GL_RGB, GL_UNSIGNED_BYTE, $image);
+    glTexImage2D_s(GL_TEXTURE_2D, 0, GL_RGB, $w,$h, 0, GL_RGB, GL_UNSIGNED_BYTE, $image);
 
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
