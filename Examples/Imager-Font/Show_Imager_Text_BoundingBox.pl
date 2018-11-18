@@ -77,11 +77,13 @@ INIT
     printf "%3d font_height\n",   $bbox->font_height;
     printf "%3d text_height\n",   $bbox->text_height;
 
-    printf "%3d end_offset\n", $bbox->end_offset;
-    printf "%3d total_width\n", $bbox->total_width;
-    printf "%3d display_width\n", $bbox->display_width+1;
-    printf "%3d left_bearing\n", $bbox->left_bearing;
-    printf "%3d right_bearing\n", abs $bbox->right_bearing-1;
+    #printf "%3d end_offset\n",    $bbox->end_offset; # not suggest to use
+    printf "%3d advance_width\n", $bbox->advance_width;
+    printf "%3d pos_width\n",     $bbox->pos_width;
+    printf "%3d total_width\n",   $bbox->total_width; # not suggest to use
+    printf "%3d display_width\n", $bbox->display_width;
+    printf "%3d left_bearing\n",  $bbox->left_bearing;
+    printf "%3d right_bearing\n", abs $bbox->right_bearing;
 
     draw_hz_line( 'white', $bbox->display_width, $baseline );
     #draw_hz_line( 'white', $bbox->display_width, $baseline + $bbox->start_offset );
@@ -89,7 +91,9 @@ INIT
     draw_hz_line( 'red',   $bbox->display_width, $baseline + abs $bbox->descent );
     draw_hz_line( 'red', $bbox->display_width,  $baseline - $bbox->global_ascent  );
     draw_hz_line( 'blue', $bbox->display_width, $baseline - $bbox->ascent );
-    #draw_hz_line( 'orange',  $bbox->display_width,  $baseline + (abs $bbox->descent) - $bbox->text_height -1 );
+    # text_height = descent + $ascent;
+    #draw_hz_line( 'orange',  100,  $baseline + (abs $bbox->descent) - $bbox->text_height );
+
 
     draw_vt_line( 'red',     60, $bbox->start_offset );   # 同 left_bearing
     draw_vt_line( 'red',     50, $bbox->end_offset );     # not suggest to use
