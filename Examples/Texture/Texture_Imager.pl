@@ -14,6 +14,7 @@ BEGIN
     our $HEIGHT = 500;
     our $WIDTH  = 700;
     our $spin=0.0;
+    our $PAUSE = 0;
 }
 
 INIT
@@ -31,7 +32,6 @@ sub read_image
     my ($H, $W) = ( $img->getheight(), $img->getwidth() );
     printf "width: %d, height: %d\n", $W, $H;
 
-    my $array;
     my @rasters;
     my @colors;
     for my $y ( reverse 0 .. $H-1 )
@@ -77,17 +77,9 @@ sub display
     glEnd();
     glPopMatrix();
 
-
     glutSwapBuffers();
 }
 
-
-sub idle 
-{
-    sleep 0.02;
-    $spin += 2.0;
-    glutPostRedisplay();
-}
 
 sub init
 {
@@ -100,10 +92,10 @@ sub init
     #glEnable(GL_DEPTH_TEST);
     
     glDepthFunc(GL_LESS);
-    glBlendFunc(GL_SRC_COLOR, GL_DST_ALPHA);
+    glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_ALPHA);
+    #glBlendFunc(GL_SRC_COLOR, GL_DST_ALPHA);
     # glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-    printf "%d %d\n", $w, $h;
     glTexImage2D_c(GL_TEXTURE_2D, 0, GL_RGBA, $pic->{w}, $pic->{h},
                     0, GL_RGBA, 
                     GL_UNSIGNED_BYTE, $pic->{array}->ptr() );
@@ -118,6 +110,13 @@ sub init
     #此函数若使用不当，会导致无法正常显示某些位深的图片
     
     glEnable(GL_TEXTURE_2D);
+}
+
+sub idle 
+{
+    sleep 0.02;
+    $spin += 2.0 unless $PAUSE;
+    glutPostRedisplay();
 }
 
 sub reshape
@@ -139,9 +138,10 @@ sub reshape
 
 sub hitkey
 {
-    our $WinID;
+    our ($WinID, $PAUSE);
     my $k = lc(chr(shift));
     if ( $k eq 'q') { quit() }
+    if ( $k eq 'p') { $PAUSE = !$PAUSE }
 }
 
 sub quit
