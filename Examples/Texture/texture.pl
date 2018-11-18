@@ -5,14 +5,9 @@
 #  This program demonstrates texture mapping  
 #  An image file (wolf.ppm) is read in as the texture
 #  then packed into a C array format and given to glTexImage2D 
-#
 
-BEGIN{ unshift(@INC,"../blib"); }  # in case OpenGL is built but not installed
-BEGIN{ unshift(@INC,"../blib/arch"); } # 5.002 gamma needs this
-BEGIN{ unshift(@INC,"../blib/lib"); } # 5.002 gamma needs this
 use OpenGL qw/ :all /;
 use OpenGL::Config;
-
 
 BEGIN
 {
@@ -24,60 +19,68 @@ BEGIN
 
 main();
 
-sub read_ascii_ppm{
-	# reads in an ascii ppm format image file
-	# returns the list (width,height,packed rgb image data)
-	#
-	# I'm not to familiar with the ppm file format 
-	# this subroutine may not work for all valid ppm files
-	#
-	local($file) = @_;
-	local($w,$h,$image);
-	local(@image);
-	open(PPM,"<$file") || die "cant open $file";
-	(<PPM>);  		# the first line is just a header: "P3"
-	(<PPM>);  		# The second line is a comment 
-	($_=<PPM>); 		# the 3rd line gives width and height
-	m/(\d+)\s+(\d+)/; 
-	$w=$1 ; $h=$2 ;
-	($w>=64 && $h>=64 && $w<10000 && $h<10000) || die "strange sizes $w,$h";
-	($_=<PPM>);		# 4th line is depth (should be 255)
-	(/255/) || die " improper depth $_";
-	$image="";
-	while(<PPM>) {
-		chop;
-		$image .= $_ . " ";
-	}
-	@image=split(/\s+/,$image);
-	$size=$w*$h*3;
-	($size == $#image +1) || die "array length $#image +1  differs from expected size $size" ; 
-	$image=pack("C$size",@image);
-	close(PPM);
-	if ($file =~ s/\.ppm$/.bin/ and not -r $file) {
-	  print STDERR "Writing binary image data '$file'.\n";
-	  open BIN, "> $file" || die "cant open '$file': $!";
-	  binmode BIN;
-	  print BIN pack 'N N a*', $w, $h, $image;
-	  close BIN or die "error closing '$file': $!";
-	}
-	($w,$h,$image);
+sub read_ascii_ppm
+{
+    # reads in an ascii ppm format image file
+    # returns the list (width,height,packed rgb image data)
+    #
+    # I'm not to familiar with the ppm file format 
+    # this subroutine may not work for all valid ppm files
+    #
+    local($file) = @_;
+    local($w,$h,$image);
+    local(@image);
+
+    open(PPM,"<$file") || die "cant open $file";
+    (<PPM>);          # the first line is just a header: "P3"
+    (<PPM>);          # The second line is a comment 
+    ($_=<PPM>);         # the 3rd line gives width and height
+
+    m/(\d+)\s+(\d+)/; 
+    $w=$1 ; $h=$2 ;
+    ($w>=64 && $h>=64 && $w<10000 && $h<10000) || die "strange sizes $w,$h";
+    ($_=<PPM>);        # 4th line is depth (should be 255)
+    (/255/) || die " improper depth $_";
+    $image="";
+    
+    while(<PPM>) {
+        chop;
+        $image .= $_ . " ";
+    }
+
+    @image=split(/\s+/,$image);
+    $size=$w*$h*3;
+    ($size == $#image +1) || die "array length $#image +1  differs from expected size $size" ; 
+    $image=pack("C$size",@image);
+    close(PPM);
+    
+    if ($file =~ s/\.ppm$/.bin/ and not -r $file) 
+    {
+        print STDERR "Writing binary image data '$file'.\n";
+        open BIN, "> $file" || die "cant open '$file': $!";
+        binmode BIN;
+        print BIN pack 'N N a*', $w, $h, $image;
+        close BIN or die "error closing '$file': $!";
+    }
+    ($w,$h,$image);
 }
 
-sub read_bin_image {
-	# reads in a binary image file
-	# returns the list (width,height,packed rgb image data)
-	#
-	# I'm not to familiar with the ppm file format 
-	# this subroutine may not work for all valid ppm files
-	#
-	my($file) = @_;
-	my($w,$h,$image);
-	my(@image);
-	open(BIN,"<$file") || die "cant open '$file': $!";
-	binmode BIN;
-	my $data = do {local $/; <BIN>};
-	close BIN or die "error closing '$file': $!";
-	return unpack 'N N a*', $data;
+sub read_bin_image 
+{
+    # reads in a binary image file
+    # returns the list (width,height,packed rgb image data)
+    #
+    # I'm not to familiar with the ppm file format 
+    # this subroutine may not work for all valid ppm files
+    #
+    my($file) = @_;
+    my($w,$h,$image);
+    my(@image);
+    open(BIN,"<$file") || die "cant open '$file': $!";
+    binmode BIN;
+    my $data = do {local $/; <BIN>};
+    close BIN or die "error closing '$file': $!";
+    return unpack 'N N a*', $data;
 }
 
 sub display
@@ -146,8 +149,8 @@ sub reshape
     my $hzhalf = $h/2.0;
     my $fa = 100.0;
 
-=temp
     glViewport(0, 0, $w, $h);
+=temp
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(-$vthalf, $vthalf, -$hzhalf, $hzhalf, 0.0, $fa*2.0); 
@@ -156,7 +159,6 @@ sub reshape
     glLoadIdentity();
     gluLookAt(0.0,0.0,$fa, 0.0,0.0,0.0, 0.0,1.0, $fa);
 =cut
-    # glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(60.0, 1.0 , 1.0, 30.0);
