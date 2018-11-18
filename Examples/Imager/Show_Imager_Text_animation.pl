@@ -16,7 +16,7 @@ STDOUT->autoflush(1);
 our $SIZE_X = 620;
 our $SIZE_Y = 520;
 our $WinID;
-our $pause = 1;
+our $pause = 0;
 
 INIT
 {
