@@ -37,10 +37,9 @@ our $WinID;
 
 INIT
 {
-    our $SIZE = 150;
+    our $SIZE = 160;
     $blue = Imager::Color->new("#0000FF");
     $font = Imager::Font->new(file  => 'C:/windows/fonts/STXINGKA.TTF',
-                              color => $blue,
                               size  => $SIZE );
 
     our $TEXT = "了天ag人";
@@ -48,6 +47,8 @@ INIT
     our $img = Imager->new( xsize=>$bbox->total_width+59, ysize=>$bbox->font_height , channels=>4 );
     our ($H, $W) = ($img->getheight(), $img->getwidth());
     printf "width: %d, height: %d\n", $W, $H;
+
+    # 填充画布背景色
     $img->box(xmin => 0, ymin => 0, xmax => $W, ymax => $H,
             filled => 1, color => '#336699');
 
@@ -85,11 +86,20 @@ INIT
     printf "%3d left_bearing\n",  $bbox->left_bearing;
     printf "%3d right_bearing\n", abs $bbox->right_bearing;
 
+    draw_text( 0, $baseline, 16, 'white', "baseline", $img );
     draw_hz_line( 'white', $bbox->display_width, $baseline );
     #draw_hz_line( 'white', $bbox->display_width, $baseline + $bbox->start_offset );
+
+    draw_text( 0, $baseline + abs($bbox->global_descent), 16, 'green', "global_descent", $img );
     draw_hz_line( 'green', $bbox->display_width, $baseline + abs($bbox->global_descent) - 1 );
+
+    draw_text( 150, $baseline + abs $bbox->descent, 16, 'red', "descent", $img );
     draw_hz_line( 'red',   $bbox->display_width, $baseline + abs $bbox->descent );
+
+    draw_text( 200, $baseline - $bbox->global_ascent+16, 16, 'red', "global_ascent", $img );
     draw_hz_line( 'red', $bbox->display_width,  $baseline - $bbox->global_ascent  );
+
+    draw_text( 50, $baseline - $bbox->ascent, 16, 'blue', "ascent", $img );
     draw_hz_line( 'blue', $bbox->display_width, $baseline - $bbox->ascent );
     # text_height = descent + $ascent;
     #draw_hz_line( 'orange',  100,  $baseline + (abs $bbox->descent) - $bbox->text_height );
@@ -116,17 +126,31 @@ INIT
     our $array = OpenGL::Array->new( scalar( @rasters ), GL_UNSIGNED_BYTE ); 
     $array->assign(0, @rasters);
 
-    sub draw_hz_line
-    {
+    sub draw_hz_line {
         my ($c, $len, $y) = @_;
         $img->line(color=>$c, x1=>0, x2=>$len, y1=>$y, y2=>$y );
     }
 
-    sub draw_vt_line
-    {
+    sub draw_vt_line {
         my ($c, $len, $x) = @_;
         $img->line(color=>$c, x1=>$x, x2=>$x, y1=>0, y2=>$len );
     }
+
+    sub draw_text {
+        my ($x, $y, $size, $color, $text, $img) = @_;
+        my $font = Imager::Font->new(file  => 'C:/windows/fonts/consola.ttf', size => $size) or warn "$!";
+        $img->align_string(
+                   font  => $font,
+                   text  => $text, #or string => "..."
+                   x     => $x,
+                   y     => $y - 1,
+                   size  => $size,
+                   color => $color,
+                   aa    => 1,     # anti-alias
+                   valign => 'bottom', halign => 'left',
+            );
+    }
+
 }
 
 &Main();
