@@ -84,8 +84,8 @@ sub display
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glPushMatrix();
-    # glRotatef($spin, 0.0, 1.0, 0.0);
-    # glRotatef($spin, 0.0, 0.0, 1.0);
+    glRotatef($spin, 0.0, 1.0, 0.0);
+    #glRotatef($spin, 0.0, 0.0, 0.0);
     glColor4f(0.3, 0.6, 0.8, 1.0);
     glBegin(GL_QUADS);
         glTexCoord2f(0.0, 0.0);  glVertex3f( 0.0, 0.0, 0.0);
@@ -94,7 +94,7 @@ sub display
         glTexCoord2f(0.0, 1.0);  glVertex3f(0.0, 80.0, 0.0);
     glEnd();
 
-    glTranslatef(-50.0, 0.0, 0.0);
+    glTranslatef(0.0, 0.0, -50.0);
     glColor4f(0.3, 0.6, 0.8, 1.0);
     glBegin(GL_QUADS);
         glTexCoord2f(0.0, 0.0);  glVertex3f( 0.0, 0.0, 0.0);
@@ -143,9 +143,9 @@ sub init
 
 sub idle 
 {
-    sleep 0.2;
+    sleep 0.02;
+    $spin += 2.0;
     glutPostRedisplay();
-
 }
 
 sub reshape 
@@ -154,7 +154,7 @@ sub reshape
     #Same with screen size
     my $w_half = $w/2.0;
     my $h_half = $h/2.0;
-    my $fa = 10.0;
+    my $fa = 200.0;
 
     glViewport(0, 0, $w, $h);
     glMatrixMode(GL_PROJECTION);
