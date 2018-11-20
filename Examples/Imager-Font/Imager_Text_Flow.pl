@@ -89,10 +89,9 @@ sub display
 
     glRasterPos3f( 20.0, 20.0, 0.0 );
     glDrawPixels_c( $img->getwidth, $img->getheight, GL_RGBA, GL_UNSIGNED_BYTE, $array->ptr() );
-
-
+    
     update_text(join( "", map { ('a'..'z', 'A'..'E')[rand(31)] } ( 1 .. rand(10)+2 ))  ) 
-    if ( $iter < 12 ); 
+    if ( $iter < 15 ); 
 
     $iter ++ if ( $pause == 0);
     glutSwapBuffers();
