@@ -20,7 +20,6 @@ our $pause = 0;
 
 INIT
 {
-    use Imager;
     our $SIZE = 30;
     our $font = Imager::Font->new(file  => encode('gbk', 'C:/windows/fonts/STXINGKA.TTF'), #STXINGKA.TTF
                               size  => $SIZE );
