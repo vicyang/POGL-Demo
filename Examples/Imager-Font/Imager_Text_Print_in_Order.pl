@@ -38,7 +38,7 @@ INIT
     my @colors;
     for my $y ( reverse 0 .. $h - 1 )
     {
-        @colors = $img->getpixel( x => [ 0 .. $w - 1 ], y => [$y] );
+        @colors = $img->getscanline( y => $y );
         grep { push @rasters, $_->rgba  } @colors;
     }
 
@@ -73,7 +73,7 @@ sub update_text
     my @colors;
     for my $y ( reverse 0 .. $h - 1 )
     {
-        @colors = $img->getpixel( x => [ 0 .. $w - 1 ], y => [$y] );
+        @colors = $img->getscanline( y => $y );
         grep { push @rasters, $_->rgba  } @colors;
     }
 
@@ -90,7 +90,9 @@ sub display
     glRasterPos3f( 20.0, 20.0, 0.0 );
     glDrawPixels_c( $img->getwidth, $img->getheight, GL_RGBA, GL_UNSIGNED_BYTE, $array->ptr() );
 
-    update_text(join( "", map { ('a'..'z', 'A'..'E')[rand(31)] } ( 1 .. rand(10)+2 ))  );
+
+    update_text(join( "", map { ('a'..'z', 'A'..'E')[rand(31)] } ( 1 .. rand(10)+2 ))  ) 
+    if ( $iter < 12 ); 
 
     $iter ++ if ( $pause == 0);
     glutSwapBuffers();
