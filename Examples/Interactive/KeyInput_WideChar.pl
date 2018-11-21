@@ -88,14 +88,18 @@ sub display
     glClear(GL_COLOR_BUFFER_BIT);
 
     my $ref;
-    return unless defined $input;
-
+    if (not defined $input)
+    {
+        glutSwapBuffers();
+        return;
+    }
+    
     if ( exists $TEXT_DATA{ $input } )
     {
         $ref = $TEXT_DATA{ $input };
         glRasterPos3f( $xbase , $ybase, 0.0 );
         glDrawPixels_c( $ref->{w}, $ref->{h}, GL_RGBA, GL_UNSIGNED_BYTE, $ref->{array}->ptr() );
-        $input = undef;
+        # $input = undef;
     }
     else
     {
@@ -104,7 +108,7 @@ sub display
         $ref = $TEXT_DATA{$input};
         glRasterPos3f( $xbase, $ybase, 0.0 );
         glDrawPixels_c( $ref->{w}, $ref->{h}, GL_RGBA, GL_UNSIGNED_BYTE, $ref->{array}->ptr() );
-        $input = undef;
+        # $input = undef;
     }
 
     #$xbase += $ref->{w};
