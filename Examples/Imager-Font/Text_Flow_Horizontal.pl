@@ -13,19 +13,19 @@ use Data::Dumper;
 use Imager;
 STDOUT->autoflush(1);
 
-our $SIZE_X = 620;
-our $SIZE_Y = 520;
+our $WIDTH = 620;
+our $HEIGHT = 520;
 our $WinID;
 our $pause = 0;
 
 INIT
 {
     our $SIZE = 30;
-    our $font = Imager::Font->new(file  => encode('gbk', 'C:/windows/fonts/STXINGKA.TTF'), #STXINGKA.TTF
+    our $font = Imager::Font->new(file  => encode('gbk', 'C:/windows/fonts/Consola.TTF'), #STXINGKA.TTF
                               size  => $SIZE );
-    our $bbox = $font->bounding_box(string=>"");
+    our $bbox = $font->bounding_box(string=>"_");
 
-    our @TEXT = split("", "十步杀一人，千里不留行。事了拂衣去，深藏身与名。" );
+    our @TEXT = ('a'..'z', 'A'..'Z', '0'..'9');
     our @TEXT_DATA = map { {} } ( 0 .. $#TEXT );
 
     for my $id ( 0 .. $#TEXT )
@@ -35,8 +35,6 @@ INIT
     }
 }
 
-
-
 Main();
 
 sub get_text_map
@@ -45,39 +43,43 @@ sub get_text_map
     my ( $char, $ref ) = @_;
 
     my $bbox = $font->bounding_box( string => $char );
-    my $img = Imager->new(xsize=>$bbox->display_width+$bbox->left_bearing, 
+    my $img = Imager->new(xsize=>$bbox->advance_width,
                           ysize=>$bbox->font_height, channels=>4);
 
     my $h = $img->getheight();
     my $w = $img->getwidth();
 
-    $img->string(
+    # 填充画布背景色
+    $img->box(xmin => 0, ymin => 0, xmax => $w, ymax => $h,
+            filled => 1, color => '#336699');
+
+    $img->align_string(
                font  => $font,
                text  => $char,
-               x     => 0,
-               y     => $h + $bbox->global_descent,   # 基线 = 总高度 - 下沉
+               x     => $w/2.0,
+               y     => $h + $bbox->global_descent,
                size  => $SIZE,
                color => 'gold',
                aa    => 1,     # anti-alias
+               halign => 'center',
             );
-
-    $ref->{h} = $h, $ref->{w} = $w;
 
     my @rasters;
     my @colors;
     for my $y ( reverse 0 .. $h - 1 )
     {
-        @colors = $img->getpixel( x => [ 0 .. $w - 1 ], y => [$y] );
+        @colors = $img->getscanline( y => $y );
         grep { push @rasters, $_->rgba  } @colors;
     }
 
+    $ref->{h} = $h, $ref->{w} = $w;
     $ref->{array} = OpenGL::Array->new( scalar( @rasters ), GL_UNSIGNED_BYTE ); 
     $ref->{array}->assign(0, @rasters);
 }
 
 sub display
 {
-    our ($bbox);
+    our ($bbox, $WIDTH, $HEIGHT);
     state $iter = -1;
     my $xbase = 0.0;
     my $ybase = 50.0;
@@ -87,10 +89,10 @@ sub display
     for my $id ( 0 .. $iter )
     {
         $ref = $TEXT_DATA[ $id ];
+        if ( $xbase+$ref->{h} >= $WIDTH ) { $ybase -= $ref->{h} , $xbase = 0.0 }
         glRasterPos3f( $xbase , $ybase, 0.0 );
         glDrawPixels_c( $ref->{w}, $ref->{h}, GL_RGBA, GL_UNSIGNED_BYTE, $ref->{array}->ptr() );
-        $xbase += $SIZE;
-        if ( $TEXT[$id] eq "。" ) { $ybase -= $bbox->font_height , $xbase = 0.0 }
+        $xbase += $ref->{w};
     }
 
     $iter ++ if ($iter < $#TEXT and $pause == 0);
@@ -110,7 +112,7 @@ sub init
 
 sub idle 
 {
-    sleep 0.2;
+    sleep 0.1;
     glutPostRedisplay();
 }
 
@@ -142,7 +144,7 @@ sub Main
 {
     glutInit();
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE );
-    glutInitWindowSize($SIZE_X, $SIZE_Y);
+    glutInitWindowSize($WIDTH, $HEIGHT);
     glutInitWindowPosition(5, 100);
     our $WinID = glutCreateWindow("Imager::Font");
     &init();

@@ -194,7 +194,7 @@ sub reshape
     glViewport(0, 0, $w, $h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho( 0.0, $h, 0.0, $w, 0.0, $fa*2.0); 
+    glOrtho( 0.0, $w, 0.0, $h, 0.0, $fa*2.0); 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     gluLookAt(0.0,0.0,$fa, 0.0,0.0,0.0, 0.0,1.0, $fa);
