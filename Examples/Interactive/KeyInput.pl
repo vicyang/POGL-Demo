@@ -17,6 +17,7 @@ our $WIDTH = 620;
 our $HEIGHT = 520;
 our $WinID;
 our $pause = 0;
+our $input = 'a';
 
 INIT
 {
@@ -25,13 +26,14 @@ INIT
                               size  => $SIZE );
     our $bbox = $font->bounding_box(string=>"_");
 
+    # 创建标签字符模板
     our @TEXT = ('a'..'z', 'A'..'Z', '0'..'9');
-    our @TEXT_DATA = map { {} } ( 0 .. $#TEXT );
+    our %TEXT_DATA;
 
-    for my $id ( 0 .. $#TEXT )
+    for my $s ( @TEXT )
     {
-        get_text_map( $TEXT[$id] , $TEXT_DATA[$id] );
-        printf "%d %d\n", $TEXT_DATA[$id]->{h}, $TEXT_DATA[$id]->{w};
+        $TEXT_DATA{$s} = {};
+        get_text_map( $s , $TEXT_DATA{$s} );
     }
 }
 
@@ -79,23 +81,27 @@ sub get_text_map
 
 sub display
 {
-    our ($bbox, $WIDTH, $HEIGHT);
+    our ($WIDTH, $HEIGHT, $input);
     state $iter = -1;
     my $xbase = 0.0;
     my $ybase = 50.0;
     glClear(GL_COLOR_BUFFER_BIT);
 
     my $ref;
-    for my $id ( 0 .. $iter )
+    if ( exists $TEXT_DATA{ $input } )
     {
-        $ref = $TEXT_DATA[ $id ];
-        if ( $xbase+$ref->{h} >= $WIDTH ) { $ybase -= $ref->{h} , $xbase = 0.0 }
+        $ref = $TEXT_DATA{ $input };
         glRasterPos3f( $xbase , $ybase, 0.0 );
         glDrawPixels_c( $ref->{w}, $ref->{h}, GL_RGBA, GL_UNSIGNED_BYTE, $ref->{array}->ptr() );
-        $xbase += $ref->{w};
+    }
+    else
+    {
+        $TEXT_DATA{$input} = {};
+        get_text_map( decode('gbk', $input), $TEXT_DATA{$input} );
+        $ref = $TEXT_DATA{$input};
+        glDrawPixels_c( $ref->{w}, $ref->{h}, GL_RGBA, GL_UNSIGNED_BYTE, $ref->{array}->ptr() );
     }
 
-    $iter ++ if ($iter < $#TEXT and $pause == 0);
     glutSwapBuffers();
 }
 
@@ -135,9 +141,26 @@ sub reshape
 
 sub hitkey 
 {
-    my $key = shift;
-    glutDestroyWindow($WinID) if ( lc(chr($key)) eq 'q' );
-    if ( chr($key) eq 'p' ) { $pause = !$pause; }
+    state $buff;
+    my $k = shift;
+    glutDestroyWindow($WinID) if ( chr($k) eq 'q' );
+    if ( chr($k) eq 'p' ) { $pause = !$pause; }
+        
+    if ( $k > 127 ) {
+        if (not defined $buff) {
+            printf "this is wide character: ";
+            $buff = chr($k);
+        } else {
+            $buff .= chr($k);
+            printf "%s\n", $buff;
+            $input = $buff;
+            $buff = undef;
+        }
+    }
+    else
+    {
+        $input = chr($k);
+    }
 }
 
 sub Main 
@@ -146,7 +169,7 @@ sub Main
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE );
     glutInitWindowSize($WIDTH, $HEIGHT);
     glutInitWindowPosition(5, 100);
-    our $WinID = glutCreateWindow("Imager::Font");
+    our $WinID = glutCreateWindow("Key Input and Print");
     &init();
     glutDisplayFunc(\&display);
     glutKeyboardFunc(\&hitkey);
