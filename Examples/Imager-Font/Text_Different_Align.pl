@@ -151,9 +151,6 @@ sub display
         }
     }
 
-    glRasterPos3f( 0.0, 0.0, 0.0 );
-    
-
     glutSwapBuffers();
 }
 
