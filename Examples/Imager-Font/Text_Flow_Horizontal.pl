@@ -57,7 +57,7 @@ sub get_text_map
                font  => $font,
                text  => $char,
                x     => $w/2.0,
-               y     => $h + $bbox->global_descent,
+               y     => $h + $bbox->global_descent, # global_descent 是负数
                size  => $SIZE,
                color => 'gold',
                aa    => 1,     # anti-alias
