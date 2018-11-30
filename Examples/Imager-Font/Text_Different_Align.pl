@@ -4,6 +4,7 @@
 =cut
 
 use utf8;
+use strict;
 use Encode;
 use Time::HiRes qw/time sleep/;
 use OpenGL qw/ :all /;
@@ -12,14 +13,14 @@ use Data::Dumper;
 use Imager;
 STDOUT->autoflush(1);
 
-our $SIZE_X = 800;
-our $SIZE_Y = 400;
-our $WinID;
-our $font_size = 26;
-our $box_size = $font_size * 2;
-
 INIT
 {
+    our $SIZE_X = 800;
+    our $SIZE_Y = 400;
+    our $WinID;
+    our $font_size = 26;
+    our $box_size = $font_size * 2;
+
     our ($font_size);
     our $font = Imager::Font->new(file  => encode('gbk', 'C:/windows/fonts/msyh.ttf'), #STXINGKA.TTF
                               size  => $font_size );
@@ -71,12 +72,14 @@ INIT
 
     sub draw_hz_line
     {
+        our ($img);
         my ($c, $len, $y) = @_;
         $img->line(color=>$c, x1=>0, x2=>$len, y1=>$y, y2=>$y );
     }
 
     sub draw_vt_line
     {
+        our ($img);
         my ($c, $len, $x) = @_;
         $img->line(color=>$c, x1=>$x, x2=>$x, y1=>0, y2=>$len );
     }
@@ -121,7 +124,7 @@ INIT
 
 sub display
 {
-    our $font_size;
+    our ($font_size, $box_size);
     glClear(GL_COLOR_BUFFER_BIT);
 
     # 备注
@@ -190,12 +193,14 @@ sub reshape
 
 sub hitkey 
 {
+    our ($WinID);
     my $key = shift;
     glutDestroyWindow($WinID) if ( lc(chr($key)) eq 'q' );
 }
 
 sub Main 
 {
+    our ($SIZE_X, $SIZE_Y);
     glutInit();
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE );
     glutInitWindowSize($SIZE_X, $SIZE_Y);
