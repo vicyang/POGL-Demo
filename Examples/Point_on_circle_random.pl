@@ -2,8 +2,9 @@
     使用随机 半径 和随机角度的方法，产生的点，越往中间越密集
 
     参考文章：
-    http://blog.csdn.net/shakingwaves/article/details/17969025
-    https://thecodeway.com/blog/?p=1138
+    [如何平均得到圆内点的随机分布](http://blog.csdn.net/shakingwaves/article/details/17969025)
+    [如何生成一个随机的圆形](https://thecodeway.com/blog/?p=1138)
+    [均匀的生成圆和三角形内的随机点](http://www.cnblogs.com/TenosDoIt/p/4025221.html)
 =cut
 
 use Modern::Perl;
