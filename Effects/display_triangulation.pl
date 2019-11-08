@@ -31,6 +31,7 @@ BEGIN
     our $WIDTH  = 700;
     our ($rx, $ry, $rz, $zoom) = (0.0, 0.0, 0.0, 1.0);
     our ($mx, $my, $mz) = (0.0, 0.0, 0.0);
+    our @points = map { [ map { rand(300.0) } (1..3) ] } (1..20) ;
 }
 
 INIT
@@ -89,7 +90,7 @@ INIT
 
 sub display 
 {
-    our ($zoom, $rx, $ry, $rz, $mx, $my, $mz, @color_idx);
+    our ($zoom, $rx, $ry, $rz, $mx, $my, $mz, @color_idx, @points);
     state $i = 0;
 
     my $day;
@@ -107,7 +108,8 @@ sub display
 
     my $bright = 1.0;
     my $color;
-    my @points = map { [ map { rand(300.0) } (1..3) ] } (1..20) ;
+    
+    $points[0] = [ rand(200), rand(200), rand(200) ];
 
     glEnable(GL_LIGHTING);
     glColor4f(1.0, 1.0, 1.0, 1.0);
@@ -126,7 +128,7 @@ sub display
         glNormal3f( @norm );
         for my $b ( @$a ) 
         {
-            $bright = 1.0 - abs($b->[1])/400.0;
+            $bright = abs($b->[1])/100.0;
             $color = $color_idx[int($b->[2])];
             glColor4f( $color->{R} * $bright, $color->{G} * $bright, $color->{B} * $bright, 0.5 );
             glVertex3f( @$b[0,2,1] );
@@ -155,7 +157,7 @@ sub idle
     $left = sprintf "%.3f", $delay - $delta;
     sleep $left if $left > 0.0;
 
-    printf "%.4f %.4f %.4f\n", time()-$t1, $delta, $left;
+    #printf "%.4f %.4f %.4f\n", time()-$t1, $delta, $left;
 }
 
 sub init
